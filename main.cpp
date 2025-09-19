@@ -1,3 +1,4 @@
 test
 hello
 blue
+red
