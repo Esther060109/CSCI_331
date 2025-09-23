@@ -1,52 +1,40 @@
-#ifndef IOBUFFER_H 
-#define IOBUFFER_H 
+#pragma once
 
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
-using namespace std;
-/**
- * @brief Constructor.
- * @param maxBytes Maximum number of bytes the buffer can hold.
- * @details Allocates memory for the buffer and initializes it.
- * @pre maxBytes > 0
- * @post Buffer is allocated and initialized.
- * 
- */
 
-class IOBuffer 
-{ 
-    public: 
-        IOBuffer(int maxBytes = 10000);//constructor
-        
-        virtual ~IOBuffer();//destructor 
-        
-        IOBuffer & operator = (const IOBuffer & );//assignment operator
-        
-        virtual void Clear(); //clear the buffer.
-        virtual int Pack(const void *field, int size = -1); //set the value of the next field of the buffer.
-        virtual int Unpack(void * field, int maxBytes = -1); //get the value of the next field of the buffer.
-        virtual void Print(ostream &) const; //print the contents of the buffer.
-        virtual int Init(); //initialize the buffer.
-        
-        //read and write methods return the address of the record
-        //sequential read and write operations. 
-        virtual int Read(istream &) = 0;
-        //read a buffer from a stream.
-        virtual int Write(ostream &) const = 0;
-        //write a buffer to a stream.
+// Minimal IOBuffer base class
+class IOBuffer {
+public:
+    IOBuffer(int maxBytes = 10000);
+    virtual ~IOBuffer();
+    IOBuffer &operator=(const IOBuffer &);
 
-        //direct access read and write operations
-        virtual int DRead(istream &, int recref) = 0;
-        //read specific record. 
-        virtual int DWrite(ostream &, int recref) const = 0;
-        //write specific record.    
-        virtual int ReadHeader(istream &); //read the buffer header from a stream.
-        virtual int WriteHeader(ostream &) const; //write the buffer header to a stream.    
+    virtual void Clear();
+    virtual int Pack(const void *field, int size = -1);
+    virtual int Unpack(void *field, int maxBytes = -1);
+    virtual void Print(std::ostream &) const;
+    virtual int Init(int maxBytes = 10000);
 
-        protected: 
-            int Initialized = 0; //TRUE if the buffer has been initialized.
-            char *Buffer = nullptr; //character array to hold field values.
-            int MaxBytes = 0; //maximum number of bytes in the buffer.
-            int NextByte = 0; //index of next byte to be packed or unpacked.
-            int BufferSize = 0; //current size of the buffer.
-            int Packing = 0; //TRUE if packing, FALSE if unpacking.
+    // sequential read/write (must be implemented by derived classes)
+    virtual int Read(std::istream &) = 0;
+    virtual int Write(std::ostream &) const = 0;
+
+    // direct access read/write - base provides simple wrappers that can be overridden
+    virtual int DRead(std::istream &in, int recref);
+    virtual int DWrite(std::ostream &out, int recref) const;
+
+    virtual int ReadHeader(std::istream &);
+    virtual int WriteHeader(std::ostream &) const;
+
+    int GetUsed() const { return BufferSize; }
+
+protected:
+    int Initialized;   // non-zero if initialized
+    char *Buffer;      // underlying memory
+    int MaxBytes;      // capacity
+    int NextByte;      // index of next byte
+    int BufferSize;    // used bytes
+    int Packing;       // non-zero when packing
 };

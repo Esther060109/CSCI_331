@@ -1,16 +1,16 @@
-#include <iostream> 
-#include <fstream> 
-#include "Iobuffer.h"
+#include <iostream>
+#include <fstream>
+#include "..\IOBuffer\Iobuffer.h"
 #include "Buffile.h"
 
-using namespace std; 
+using namespace std;
 
 /**
  * @brief Constructor
  * @param from Reference to an IOBuffer object to associate with this BufferFile.
  * @post BufferFile is initialized with the provided IOBuffer.
  */
-BufferFile::BufferFile(IOBuffer & from):Buffer(from){}
+BufferFile::BufferFile(IOBuffer & from) : Buffer(from) {}
 
 BufferFile::~BufferFile() 
 { 
@@ -22,21 +22,22 @@ BufferFile::~BufferFile()
  * @brief Destructor
  * @post File is closed if open.
  */
-int BufferFile::Open(const char * filename, int mode) 
-{ 
-    if (mode&ios::noreplace||mode&ios::trunc) 
-        return FALSE; 
-    File.seekg(0, ios::beg): 
-        File.seekp(0, ios::beg); 
-    
-    HeaderSize = ReadHeader(); 
-    
-    if(!HeaderSize) 
-        return FALSE; 
+int BufferFile::Open(const char * filename, std::ios::openmode mode)
+{
+    // Open the file with given mode (add binary)
+    File.open(filename, mode | std::ios::binary);
+    if (!File.good()) return 0;
 
-    File.seekp(HeaderSize, ios::beg); 
-    File.seekg(HeaderSize, ios::beg); 
-    return File.good();
+    // Ensure both get/put are at start before reading header
+    File.seekg(0, std::ios::beg);
+    File.seekp(0, std::ios::beg);
+
+    HeaderSize = ReadHeader();
+    if (HeaderSize <= 0) return 0;
+
+    File.seekp(HeaderSize, std::ios::beg);
+    File.seekg(HeaderSize, std::ios::beg);
+    return File.good() ? 1 : 0;
 }
 
 /**
@@ -47,18 +48,14 @@ int BufferFile::Open(const char * filename, int mode)
  * @pre mode includes ios::out.
  * @post File is created and header is written.
  */
-int BufferFile::Create(const char*filename, int mode) 
-{ 
-    if(!(mode& ios::out)) 
-        return FALSE; 
-    File.open(filename, mode|ios::out|ios::noreplace|ios::binary); 
-    if(!File.good()) 
-    { 
-        File.close(); 
-        return FALSE;   
-    }
-    HeaderSize = WriteHeader(); 
-    return HeaderSize != 0; 
+int BufferFile::Create(const char* filename, std::ios::openmode mode)
+{
+    if (!(mode & std::ios::out)) return 0;
+    // open for output; do not use nonstandard flags like ios::noreplace
+    File.open(filename, mode | std::ios::out | std::ios::binary);
+    if (!File.good()) { File.close(); return 0; }
+    HeaderSize = WriteHeader();
+    return HeaderSize != 0;
 }
 
 /**
@@ -66,10 +63,10 @@ int BufferFile::Create(const char*filename, int mode)
  * @return TRUE if file was successfully closed or was not open, FALSE otherwise.
  * @post File is closed.
  */
-int BufferFile::Close() 
-{ 
-    File.close(); 
-    return TRUE;
+int BufferFile::Close()
+{
+    File.close();
+    return 1;
 }
 
 /**

@@ -4,7 +4,8 @@
 #include<iostream>
 using namespace std;
 
-#include "VariableLengthBuffer.h"
+// VariableLengthBuffer is in the VariableLengthBuffer folder and the header is Varlen.h
+#include "../VariableLengthBuffer/Varlen.h"
 
 /**
  * @class DelimFieldBuffer
@@ -45,3 +46,5 @@ inline DelimFieldBuffer::DelimFieldBuffer(const DelimFieldBuffer & buffer)
 {
     Init(buffer.Delim); 
 }
+
+#endif // DELIM_H

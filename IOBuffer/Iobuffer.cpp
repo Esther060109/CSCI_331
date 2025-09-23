@@ -1,55 +1,55 @@
-
-#include<stdlib.b> 
-#include<string.h> 
-#include<iostream> 
-using namespace std; 
+// IOBuffer implementation - single clean translation unit
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 #include "Iobuffer.h"
 
 /**
  * @brief Constructor.
- * @param maxBytes Maximum number of bytes the buffer can hold.
- * @details Allocates memory for the buffer and initializes it.
- * @pre maxBytes > 0
- * @post Buffer is allocated and initialized.
- * 
+ * @param maxBytes Maximum number of bytes for this buffer (default 10000).
+ * @post Buffer is initialized and cleared.
  */
-IOBuffer::IOBuffer(int maxBytes) 
-{
-    Init(maxBytes); 
+IOBuffer::IOBuffer(int maxBytes) : Initialized(0), Buffer(nullptr), MaxBytes(0), NextByte(0), BufferSize(0), Packing(1) {
+    Init(maxBytes);
+}
+/**
+ * @brief Destructor.
+ * @post Buffer is deallocated.
+ */
+IOBuffer::~IOBuffer() {
+    delete[] Buffer;
 }
 
 /**
  * @brief Assignment operator.
- * @param buffer Buffer to assign from.
- * @return Reference to this buffer.
- * @pre This buffer has enough space to hold the contents of the source buffer.
- * @post This buffer contains a copy of the source buffer's contents.
+ * @param buffer Another IOBuffer to copy from. 
+ * @return Reference to this IOBuffer.
+ * @post This IOBuffer contains a copy of the data from the source buffer.
  */
-IOBuffer & IOBuffer::operator = (const IOBuffer & buffer) 
-{ 
-    if(maxBytes <buffer.BufferSize) 
-        return *this;
-    
-    Initialized = buffer.Initialized; //TRUE if the buffer has been initialized.
-    MaxBytes = buffer.MaxBytes; //maximum number of bytes in the buffer.    
-    BufferSize = buffer.BufferSize;//current size of the buffer.
-    memcpy(Buffer, buffer.Buffer, BufferSize);//    
+IOBuffer &IOBuffer::operator=(const IOBuffer &buffer) {
+    if (this == &buffer) return *this;
+    if (MaxBytes < buffer.BufferSize) {
+        delete[] Buffer;
+        Buffer = new char[buffer.MaxBytes];
+        MaxBytes = buffer.MaxBytes;
+    }
+    Initialized = buffer.Initialized;
+    BufferSize = buffer.BufferSize;
+    if (BufferSize > 0) memcpy(Buffer, buffer.Buffer, BufferSize);
     NextByte = buffer.NextByte;
     Packing = buffer.Packing;
     return *this;
 }
 
 /**
- * @brief Clears the buffer contents.
- * @details Invokes the parent IOBuffer Clear() method.
- *  @post Buffer is empty
+ * @brief Clears the buffer.
+ * @post Buffer is empty.
  */
-void IOBuffer::Clear() 
-//clear field values from the buffer. 
-{
-    NextBute  = 0; 
-    Packing = True;
+void IOBuffer::Clear() {
+    NextByte = 0;
+    BufferSize = 0;
+    Packing = 1;
 }
 
 /**
@@ -57,100 +57,138 @@ void IOBuffer::Clear()
  * @param field Pointer to the field data.
  * @param size Size of the field in bytes, or -1 if null-terminated string.
  * @return Number of bytes packed, or -1 if error.
- * @pre Buffer is initialized and has enough space.
+ * @post Field data is copied into the buffer at the current position.
  */
-void IOBuffer::Print(ostream& stream) const
-//print the contents of the buffer. 
-{ 
-    stream<<"MaxBytes"<<MaxBytes<<"BufferSize"<<BufferSize; 
+int IOBuffer::Pack(const void *field, int size) {
+    if (!field) return -1;
+    const char *f = static_cast<const char *>(field);
+    int n = size;
+    if (size == -1) n = static_cast<int>(strlen(f)) + 1;
+    if (NextByte + n > MaxBytes) return -1;
+    memcpy(Buffer + NextByte, f, n);
+    NextByte += n;
+    BufferSize = NextByte;
+    return n;
 }
 
 /**
- * @brief Initializes the buffer.
- * @param maxBytes Maximum number of bytes the buffer can hold.
- *  @return 1 if successful.
- * @post Buffer is cleared and ready for use
-*/
-int IOBuffer::Init(int maxBytes)
-{ 
-    Initialized = False;
-    if(maxBytes<0) maxBytes =0; 
+ * @brief Unpacks a field from the buffer.
+ * @param field Pointer to store the unpacked field data.
+ * @param maxBytes Maximum size of the field buffer, or -1 if unknown.
+ * @return Number of bytes unpacked, or -1 if error.
+ * @post Field data is copied from the buffer to the provided pointer.
+ */
+int IOBuffer::Unpack(void *field, int maxBytes) {
+    if (!field) return -1;
+    if (NextByte >= BufferSize) return -1;
+    char *dst = static_cast<char *>(field);
+    if (maxBytes == -1) {
+        int i = 0;
+        while (NextByte + i < BufferSize) {
+            dst[i] = Buffer[NextByte + i];
+            if (dst[i] == '\0') { NextByte += i + 1; return i + 1; }
+            ++i;
+        }
+        return -1;
+    } else {
+        int i = 0;
+        while (i < maxBytes - 1 && NextByte + i < BufferSize) {
+            dst[i] = Buffer[NextByte + i];
+            if (dst[i] == '\0') { NextByte += i + 1; return i + 1; }
+            ++i;
+        }
+        dst[i] = '\0';
+        NextByte += i + 1;
+        return i + 1;
+    }
+}
+
+/**
+ * @brief Prints buffer metadata.
+ * @param stream Output stream to print to.
+ */
+void IOBuffer::Print(std::ostream &stream) const {
+    stream << "MaxBytes=" << MaxBytes << " BufferSize=" << BufferSize << " NextByte=" << NextByte;
+}
+
+/**
+ * @brief Initializes the buffer with a specified maximum size.
+ * @param maxBytes Maximum size of the buffer.
+ * @post Buffer is allocated and cleared.
+ * @return 1 if successful, 0 otherwise.
+ */
+int IOBuffer::Init(int maxBytes) {
+    if (maxBytes <= 0) maxBytes = 1;
+    delete[] Buffer;
     MaxBytes = maxBytes;
     Buffer = new char[MaxBytes];
-    BufferSize = 0; 
-    Clear(); 
-    return 1; 
+    BufferSize = 0;
+    NextByte = 0;
+    Initialized = 1;
+    Packing = 1;
+    return 1;
 }
 
 /**
- * @brief Packs a field into the buffer.
- * @param field Pointer to the field data.
- * @param size Size of the field in bytes, or -1 if null-terminated string.
- * @return Number of bytes packed, or -1 if error.
- * @pre Buffer is initialized and has enough space.
- * @post Field is added to the buffer.
+ * @brief Direct read from a specific record address in the stream.
+ * @param stream Input stream to read from.
+ * @param recref Record address to read from.
+ * @return Number of bytes read, or -1 if error.
+ * @pre Stream is open and positioned correctly.
+ * @post Buffer is filled with data read from the stream.
  */
-IOBuffer::DWrite(istream &stream, int recref) 
-//read specified record. 
-{ 
-    stream.seekg(recref, ios::beg); 
-    if(stream.tellg() != recref) 
-        return -1; 
-    return Read(stream); 
+int IOBuffer::DRead(std::istream &stream, int recref) {
+    stream.clear();
+    stream.seekg(recref, std::ios::beg);
+    if (!stream.good()) return -1;
+    return Read(stream);
 }
 
 /**
- * @brief Writes the buffer to an output stream.
+ * @brief Direct write to a specific record address in the stream.
  * @param stream Output stream to write to.
- * @return Position in stream of the record, or -1 if error.
- * @pre Buffer has been initialized and contains data
- * @post Buffer is written to stream
+ * @param recref Record address to write to.
+ * @return Number of bytes written, or -1 if error.
+ * @pre Stream is open and positioned correctly.
+ * @post Buffer contents are written to the stream at the specified position.
  */
-int IOBuffer::DWrite(ostream &stream, int recref) const
-//write specified record 
-{ 
-    stream.seekp(recref, ios::beg); 
-    if(stream.tellp() != recref) 
-        return -1; 
-    return Write(stream);   
+int IOBuffer::DWrite(std::ostream &stream, int recref) const {
+    stream.clear();
+    stream.seekp(recref, std::ios::beg);
+    if (!stream.good()) return -1;
+    return Write(stream);
 }
 
-
-static const char *headerStr = "IOBuffer"; 
-static const in header size = strlen (headerStrS); 
+static const char *IOBUFFER_HEADER = "IOBuffer";
+static const int IOHEADER_SIZE = static_cast<int>(strlen(IOBUFFER_HEADER));
 
 /**
  * @brief Reads the buffer header from a stream.
  * @param stream Input stream to read from.
- * @return Stream position after header, or 0 if error.
- * @pre Stream is open and positioned at the start.
- * @post Stream position is after the header if successful
+ * @return Position in stream of the record, or 0 if error.
  */
-int IOBuffer::ReadHeader(istream& stream) 
-{ 
-    char str[9]; 
-    stream.seekg(0, ios::beg); 
-    stream.read(str, headerSize); 
-    if(!stream.good()) 
-        return -1; 
-    if(strncmp(str, headerStr, headerSize) ==0) 
-        return headerSize; 
-    else 
-        return -1; 
+int IOBuffer::ReadHeader(std::istream &stream) {
+    stream.clear();
+    stream.seekg(0, std::ios::beg);
+    if (!stream.good()) return -1;
+    char buf[32];
+    stream.read(buf, IOHEADER_SIZE);
+    if (!stream.good()) return -1;
+    if (strncmp(buf, IOBUFFER_HEADER, IOHEADER_SIZE) != 0) return -1;
+    return static_cast<int>(stream.tellg());
 }
 
 /**
  * @brief Writes the buffer header to a stream.
  * @param stream Output stream to write to.
- * @return Number of bytes written, or -1 if error.
- * @pre Stream is open and positioned at the start.
- * @post Header is written to the stream if successful
+ * @return Stream position after writing header, or FALSE if error.
  */
-int IOBuffer::WriteHeader(ostream &stream) const 
-{ 
-    stream.seekp(o,ios::beg); 
-    stream.write(headerStr, headerSize); 
-    if(!stream.good()) 
-        return -1;
-    return headerSize;
-}   
+int IOBuffer::WriteHeader(std::ostream &stream) const {
+    stream.clear();
+    stream.seekp(0, std::ios::beg);
+    if (!stream.good()) return -1;
+    stream.write(IOBUFFER_HEADER, IOHEADER_SIZE);
+    if (!stream.good()) return -1;
+    return static_cast<int>(stream.tellp());
+}
+

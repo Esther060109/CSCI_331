@@ -5,7 +5,7 @@
 #include <iostream> 
 using namespace std; 
 
-#include "Iobuffer.h"
+#include "..\IOBuffer\Iobuffer.h"
 
 class BufferFile
 { 
@@ -18,8 +18,8 @@ class BufferFile
         explicit BufferFile(IOBuffer &); //Constructor 
         virtual ~BufferFile(); //Destructure
 
-        int Open(char *filename, int Mode); 
-        int Create(const char * filename, int Mode); 
+        int Open(const char *filename, std::ios::openmode Mode);
+        int Create(const char * filename, std::ios::openmode Mode);
         int Close (); 
         int Rewind(); 
         //Input and Output operations 
@@ -42,4 +42,6 @@ class BufferFile
         int WriteHeader(); 
 
 };
+
+#endif // BUFFILE_H
 
