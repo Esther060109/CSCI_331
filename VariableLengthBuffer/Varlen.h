@@ -109,7 +109,7 @@ public:
      * @param size Number of bytes to pack.
      * @return Number of bytes packed, or -1 on error.
      */
-    int PackDelimeted(void *, int);
+    int PackDelimited(void *, int);
 
     /**
      * @brief Packs length-prefixed data into the buffer.

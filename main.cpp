@@ -15,7 +15,7 @@
  *   - a latitude (double)                     -> field name: "latitude" or "lat"
  *   - a longitude (double)                    -> field name: "longitude" or "lon" or "lng"
  *
- * This file assumes the existence of a Buffer class and a ZipRecord type (see assumptions below).
+ * This file assumes the existence of a Buffer class and a Location type (see assumptions below).
  *
  * Usage:
  *   ./zip_by_state input_sorted_by_zip.csv
@@ -42,21 +42,21 @@
 #include <tuple>
 #include <vector>
 
-
-
 /// Uncomment to use the fallback CSV parser built into this file (useful for testing).
 // #define USE_FALLBACK_CSV_PARSER
-
+//#include "../IOBuffer/Iobuffer.h"
+//#include "../BufferFile/Buffile.h"
+//#include "../Location/Location.h"
 #ifndef USE_FALLBACK_CSV_PARSER
-// === Assumptions about external Buffer + ZipRecord API ===
+// === Assumptions about external Buffer + Location API ===
 //
 // You must provide the following headers / types in your project:
 //   - Buffer.h: declares a class Buffer which can be constructed from a filename and provides:
-//         bool readNext(ZipRecord &out);   // reads next record; returns false at EOF
+//         bool readNext(Location &out);   // reads next record; returns false at EOF
 //     OR
-//         std::vector<ZipRecord> Buffer::readAll(); // alternative API
+//         std::vector<Location> Buffer::readAll(); // alternative API
 //
-//   - ZipRecord.h: declares a struct/class ZipRecord with at least the following public members:
+//   - Location.h: declares a struct/class Location with at least the following public members:
 //         std::string state;    // 2-character state ID (e.g., "IL")
 //         std::string zip;      // zip code as string (leading zeros preserved)
 //         double latitude;      // decimal degrees (positive north)
@@ -65,15 +65,17 @@
 // The implementation below uses the readNext(Buffer) pattern. If your Buffer uses readAll(), adapt
 // the code in loadRecordsFromBuffer() accordingly.
 //
-// Include your project's Buffer and ZipRecord definitions here:
+// Include your project's Buffer and Location definitions here:
 #include "Buffer.h"
-#include "Iobuffer.h"
+// #include "../IOBuffer/Iobuffer.h"
+// #include "../Location/Location.h"
 #include "ZipRecord.h"
+
 
 #else
 // === FALLBACK CSV PARSER ===
 // If you don't have the Buffer class ready, the fallback will parse a CSV with headers
-// and produce the same ZipRecord-like struct. This is intentionally conservative and robust.
+// and produce the same Location-like struct. This is intentionally conservative and robust.
 //
 // To use, define USE_FALLBACK_CSV_PARSER at top of this file (or pass -DUSE_FALLBACK_CSV_PARSER).
 struct ZipRecord {
@@ -202,7 +204,7 @@ static bool loadRecordsFromCsvFile(const std::string &path, std::vector<ZipRecor
 /**
  * @brief A small alias for the record type used by the rest of this file.
  *
- * If you use the external Buffer/ZipRecord, ZipRecAlias is the external ZipRecord type.
+ * If you use the external BufferZipRecord, ZipRecAlias is the external ZipRecord type.
  * If using the fallback, ZipRecord above is used.
  */
 #ifdef USE_FALLBACK_CSV_PARSER
@@ -232,19 +234,19 @@ struct StateExtremes {
 static void updateExtremes(StateExtremes &extremes, const ZipRecAlias *r) {
     if (!r) return;
     // Eastmost = least longitude
-    if (!extremes.eastmost || r->longitude < extremes.eastmost->longitude) {
+    if (!extremes.eastmost || r->Longitude < extremes.eastmost->Longitude) {
         extremes.eastmost = r;
     }
     // Westmost = greatest longitude
-    if (!extremes.westmost || r->longitude > extremes.westmost->longitude) {
+    if (!extremes.westmost || r->Longitude > extremes.westmost->Longitude) {
         extremes.westmost = r;
     }
     // Northmost = greatest latitude
-    if (!extremes.northmost || r->latitude > extremes.northmost->latitude) {
+    if (!extremes.northmost || r->Latitude > extremes.northmost->Latitude) {
         extremes.northmost = r;
     }
     // Southmost = least latitude
-    if (!extremes.southmost || r->latitude < extremes.southmost->latitude) {
+    if (!extremes.southmost || r->Latitude < extremes.southmost->Latitude) {
         extremes.southmost = r;
     }
 }
@@ -270,12 +272,12 @@ static bool loadRecordsFromFile(const std::string &path, std::vector<ZipRecAlias
     //
     // If your Buffer has a different API (e.g., readAll()), modify this adapter.
     try {
-        Buffer buf(path);
+        Buffer buffer(path);
         ZipRecAlias rec;
-        while (buf.readNext(rec)) {
+        while (buffer.read(rec)) {
             out.push_back(rec);
         }
-        return true;
+        return true;    
     } catch (const std::exception &ex) {
         std::cerr << "Error while reading file via Buffer: " << ex.what() << std::endl;
         return false;
@@ -330,13 +332,13 @@ static void printResultsTable(const std::map<std::string, StateExtremes> &extrem
         auto printRec = [](const ZipRecAlias *r) -> std::string {
             if (!r) return std::string("-");
             std::ostringstream oss;
-            oss << r->zip << " / " << std::fixed << std::setprecision(6) << (r->longitude) ;
+            oss << r->zip << " / " << std::fixed << std::setprecision(6) << (r->Longitude) ;
             return oss.str();
         };
         auto printRecLat = [](const ZipRecAlias *r) -> std::string {
             if (!r) return std::string("-");
             std::ostringstream oss;
-            oss << r->zip << " / " << std::fixed << std::setprecision(6) << (r->latitude) ;
+            oss << r->zip << " / " << std::fixed << std::setprecision(6) << (r->Latitude) ;
             return oss.str();
         };
 
@@ -364,10 +366,19 @@ static bool extremesEqual(const std::map<std::string, StateExtremes> &a, const s
         const std::string &state = p.first;
         auto it = b.find(state);
         if (it == b.end()) return false;
+        #ifdef USE_FALLBACK_CSV_PARSER
         auto getKey = [](const ZipRecAlias *r) -> std::tuple<std::string, double, double> {
             if (!r) return {"", NAN, NAN};
-            return {r->zip, r->latitude, r->longitude};
+            // fallback ZipRecord uses lowercase latitude/longitude
+            return { r->zip, r->latitude, r->longitude };
         };
+        #else
+        auto getKey = [](const ZipRecAlias *r) -> std::tuple<std::string, double, double> {
+            if (!r) return {"", NAN, NAN};
+            // project Location/ZipRecord uses numeric Latitude/Longitude members (no atof)
+            return { r->zip, r->Latitude, r->Longitude };
+        };
+        #endif
         auto ta = p.second;
         auto tb = it->second;
         if (getKey(ta.eastmost) != getKey(tb.eastmost)) return false;
