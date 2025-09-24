@@ -2,7 +2,7 @@
 #define LOCATION_H
 
 #include <iostream>
-#include "IOBuffer.h"
+#include "../IOBuffer/IOBuffer.h"
 #include "../DelimFieldBuffer/Delim.h"   // include the real declaration
 #include "../VariableLengthBuffer/Varlen.h" // include the real declaration
 using namespace std;
