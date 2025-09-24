@@ -1,3 +1,13 @@
+/** 
+ * @author: Esther Kreutzfeldt
+ * @file IOBuffer/Iobuffer.cpp
+ * @brief Implementation of the IOBuffer class for input/output buffering.
+ * @details This file implements the IOBuffer class, which provides methods for
+ *       buffered I/O operations including packing/unpacking fields,
+ *      reading/writing to streams, and managing buffer state.
+ * 
+ */
+
 // IOBuffer implementation - single clean translation unit
 #include <cstdlib>
 #include <cstring>

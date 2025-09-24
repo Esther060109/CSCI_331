@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include "IOBuffer.h"
+#include "../DelimFieldBuffer/Delim.h"   // include the real declaration
+#include "../VariableLengthBuffer/Varlen.h" // include the real declaration
 using namespace std;
 
 class Location
@@ -19,7 +21,7 @@ public:
     // operations
     Location();
     static int InitBuffer(DelimFieldBuffer &);
-    static int InitBuffer(LengthFieldBuffer &);
+    static int InitBuffer(VariableLengthBuffer &);
     void Clear();
     int Pack(IOBuffer &) const;
     int Unpack(IOBuffer &);

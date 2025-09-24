@@ -1,3 +1,12 @@
+/**
+ * @author: Esther Kreutzfeldt
+ * @file Buffile.h
+ * @brief Header file for the BufferFile class.
+ * @details This file defines the BufferFile class which provides an interface for buffered file operations.
+ * 
+ */
+
+
 #ifndef BUFFILE_H 
 #define BUFFILE_H 
 
@@ -7,6 +16,12 @@ using namespace std;
 
 #include "..\IOBuffer\Iobuffer.h"
 
+/**
+ * @class BufferFile
+ * @brief Class to handle buffered file operations using an associated IOBuffer.
+ * @details This class provides methods to open, create, read, write, append, and manage headers
+ *          for files using a specified IOBuffer for buffering data.
+ */
 class BufferFile
 { 
 

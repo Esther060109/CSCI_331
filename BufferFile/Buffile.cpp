@@ -1,3 +1,14 @@
+/**
+ * @author: Esther Kreutzfeldt
+ * @brief Implementation of the BufferFile class for buffered file operations.
+ * @details This file implements the BufferFile class which provides buffered file I/O
+ *         using an associated IOBuffer. It supports opening, creating, reading,
+ *        writing, appending, and managing file headers.
+ * @date 2024-10-01
+ * @file BufferFile/Buffile.cpp
+ */
+
+
 #include <iostream>
 #include <fstream>
 #include "..\IOBuffer\Iobuffer.h"

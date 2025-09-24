@@ -1,3 +1,12 @@
+/**
+ * @author: Esther Kreutzfeldt
+ * @file Delim.h
+ * @brief Header file for the DelimFieldBuffer class.
+ * @details This file declares the DelimFieldBuffer class, which extends VariableLengthBuffer
+ *          to support delimiter-separated fields. Provides methods for packing/unpacking fields,
+ *          reading/writing headers, and printing buffer contents.
+ */
+
 #ifndef DELIM_H
 #define DELIM_H
 

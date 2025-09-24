@@ -1,3 +1,13 @@
+/**
+ * @author: Esther Kreutzfeldt
+ * @brief Implementation of the DelimFieldBuffer class for delimiter-separated fields.
+ * @details This file implements the DelimFieldBuffer class, which provides methods for
+ *        packing/unpacking fields using a specified delimiter, reading/writing headers,
+ *       and printing buffer contents.
+ * @file DelimFieldBuffer/Delim.cpp
+ */
+
+
 #include "Delim.h"
 #include "../IOBuffer/Iobuffer.h"
 #include<iostream> 

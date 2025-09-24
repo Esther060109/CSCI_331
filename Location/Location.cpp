@@ -1,5 +1,7 @@
 #include <iostream>
 #include "location.h"
+#include "../DelimFieldBuffer/Delim.h"   // include the real declaration
+#include "../VariableLengthBuffer/Varlen.h" // include the real declaration
 
 Location::Location() { Clear(); }
 
@@ -36,7 +38,7 @@ int Location::Unpack(IOBuffer &Buffer)
 }
 
 int Location::InitBuffer(DelimFieldBuffer &Buffer) { return 1; }
-int Location::InitBuffer(LengthFieldBuffer &Buffer) { return 1; }
+int Location::InitBuffer(VariableLengthBuffer &Buffer) { return 1; }
 
 void Location::Print(ostream &stream, const char* label) const
 {

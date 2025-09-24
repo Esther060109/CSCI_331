@@ -1,3 +1,11 @@
+/**
+ * @author: Esther Kreutzfeldt
+ * @file Iobuffer.h
+ * @brief Header file for the IOBuffer class.
+ * @details This file defines the IOBuffer class which provides an interface for buffered I/O operations.
+ */
+
+
 #pragma once
 
 #include <cstdlib>
