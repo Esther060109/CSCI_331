@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "**/ring_buffer/**/*.h": "c",
+        "**/utilities/**/*.h": "c",
+        "assert.h": "c"
+    }
+}
