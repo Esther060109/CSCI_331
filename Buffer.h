@@ -13,9 +13,9 @@ class Buffer
         bool read(ZipRecord & record);
 
     private:
-        ifstream fin;
+        //ifstream fin;
         bool headerSkipped; 
-        static bool pareLine(const string &line, vector<string> &out);
+        //static bool parseLine(const string &line, vector<string> &out);
         static string trim(const string &s);
 };
 #endif // BUFFER_H

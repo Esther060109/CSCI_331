@@ -2,7 +2,8 @@
 #include "location.h"
 #include "../DelimFieldBuffer/Delim.h"   // include the real declaration
 #include "../VariableLengthBuffer/Varlen.h" // include the real declaration
-
+#include "../IOBuffer/Iobuffer.h"
+using namespace std;
 Location::Location() { Clear(); }
 
 void Location::Clear()
