@@ -16,6 +16,7 @@ using namespace std;
 typedef struct 
 { 
     unsigned int zip; 
+    unsigned int length;
     string place_name; 
     string state;
     string county; 
@@ -33,12 +34,13 @@ struct display
         
         void print(buffer* pointer) 
         { 
-            printf("zip code: %u, ", pointer->zip); 
-            printf("Name of the place: %s, ", pointer->place_name.c_str()); 
-            printf("State: %s, ", pointer->state.c_str()); 
-            printf("County: %s, ", pointer->county.c_str()); 
-            printf("Latitude: %.4f, ", pointer->latitude);
-            printf("Longitude: %.4f\n", pointer->longitude);
+            // printf("%u",pointer->length,", ");
+            // printf("zip code: %u, ", pointer->zip); 
+            // printf("Name of the place: %s, ", pointer->place_name.c_str()); 
+            // printf("State: %s, ", pointer->state.c_str()); 
+            // printf("County: %s, ", pointer->county.c_str()); 
+            // printf("Latitude: %.4f, ", pointer->latitude);
+            // printf("Longitude: %.4f\n", pointer->longitude);
         }
 };
 

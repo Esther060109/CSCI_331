@@ -13,7 +13,7 @@ using namespace std;
 
 void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txtFile)
 {
-    printf("hello world\n"); 
+    //printf("hello world\n"); //test line
     char* end;
 
     // Write header record FIRST (required for structure format)
@@ -36,6 +36,8 @@ void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txt
         //stringstream  allows us to read strings as if they were inputs and outputs.
         stringstream inputString(line);
 
+        //get the length of the line; 
+        pointer->length = line.length();
         //using the tempString to convert the string to integer/decimal number. 
         getline(inputString, pointer->tempString,','); 
         pointer->zip = atoi(pointer->tempString.c_str());
@@ -64,7 +66,7 @@ void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txt
         records.push_back(*pointer);
 
         //righting the current "record" to the file "notRandom".
-        txtFile << pointer->zip << "," << pointer->place_name << "," << pointer->state << "," << pointer->county << "," << pointer->latitude << "," << pointer->longitude << endl;
+        txtFile << pointer->length<< "," << pointer->zip << "," << pointer->place_name << "," << pointer->state << "," << pointer->county << "," << pointer->latitude << "," << pointer->longitude << endl;
 
         line = "";
     }
