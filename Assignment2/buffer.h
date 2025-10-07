@@ -21,7 +21,8 @@ typedef struct
     string county; 
     double latitude; 
     double longitude; 
-    string tempString=",";//initializing the tempString.  
+    string tempString= ",";//initializing the tempString.  
+    char padding[1]; 
 
 }buffer;
 
@@ -41,6 +42,9 @@ struct display
         }
 };
 
-void parsing (int argc, char** argv, buffer* pointer, string file); //pointer is the pointer pointing to the buffer struct. 
+void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txtFile); //pointer is the pointer pointing to the buffer struct. 
+                                                                                        //the & in the ofstream& is a REFERENCE (alias) to the original variable.
+                                                                                        //the pass by reference is necessary because the txtFile cannot be copied. 
+void createFiles(int argc, char** argv, buffer *pointer, string file);
 void print(buffer* pointer); 
 #endif
