@@ -42,6 +42,51 @@ int main(int argc, char** argv)
     printf("  - txtFile.txt\n");
     printf("  - txtFileRandom.txt\n");
     
-    
-    return 0; 
+    // length-indicated files
+    printf("\n=== Creating Length-Indicated Files ===\n");
+
+    ofstream lengthFile1("length_us_postal_codes.txt");
+    HeaderRecord header1; 
+    header1.record_count = countCSVRecords(file1);
+    writeHeaderRecord(lengthFile1, &header1);
+    parsingLengthFile(argc, argv, &myBuffer, file1, lengthFile1); 
+    lengthFile1.close();
+
+    ofstream lengthFile2("length_us_postal_codes_random.txt");
+    HeaderRecord header2; 
+    header2.record_count = countCSVRecords(file2);
+    writeHeaderRecord(lengthFile2, &header2);
+    parsingLengthFile(argc, argv, &myBuffer, file2, lengthFile2); 
+    lengthFile2.close();
+
+    // read/unpack length-indicated files
+    printf("\n=== Reading Length-Indicated Records ===\n");
+
+    ifstream readFile1("length_us_postal_codes.txt");
+    HeaderRecord readHeader1;
+    readHeaderRecord(readFile1, &readHeader1);
+    cout << "Original CSV header: " << readHeader1.file_type 
+         << ", Records: " << readHeader1.record_count << endl;
+
+    while(readLengthRecord(readFile1, &myBuffer))
+    {
+        cout << myBuffer.zip << ", " << myBuffer.place_name << ", " 
+             << myBuffer.state << ", " << myBuffer.county << ", " 
+             << myBuffer.latitude << ", " << myBuffer.longitude << endl;
+    }
+    readFile1.close();
+
+    ifstream readFile2("length_us_postal_codes_random.txt");
+    HeaderRecord readHeader2;
+    readHeaderRecord(readFile2, &readHeader2);
+    cout << "Randomized CSV header: " << readHeader2.file_type 
+         << ", Records: " << readHeader2.record_count << endl;
+
+    while(readLengthRecord(readFile2, &myBuffer))
+    {
+        cout << myBuffer.zip << ", " << myBuffer.place_name << ", " 
+             << myBuffer.state << ", " << myBuffer.county << ", " 
+             << myBuffer.latitude << ", " << myBuffer.longitude << endl;
+    }
+    readFile2.close();
 }

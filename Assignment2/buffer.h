@@ -44,9 +44,31 @@ struct display
         }
 };
 
+// length-indicated CSV/record handling
+void parsingLengthFile(int argc, char** argv, buffer* pointer, string csvFile, ofstream& lengthFile);
+bool readLengthRecord(ifstream& inFile, buffer* pointer);
+unsigned int countCSVRecords(string csvFile);
+
+// header record
+typedef struct
+{
+    string file_type = "LengthIndicatedZip";
+    int version = 1;
+    unsigned int header_size;
+    unsigned int record_count;
+    unsigned int field_count = 6; 
+    string primary_key = "zip";
+    vector<string> field_names = {"zip", "place_name", "state", "county", "latitude", "longitude"};
+} HeaderRecord;
+
+void writeHeaderRecord(ofstream& out, HeaderRecord* header);
+void readHeaderRecord(ifstream& in, HeaderRecord* header);
+
 void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txtFile); //pointer is the pointer pointing to the buffer struct. 
                                                                                         //the & in the ofstream& is a REFERENCE (alias) to the original variable.
                                                                                         //the pass by reference is necessary because the txtFile cannot be copied. 
 void createFiles(int argc, char** argv, buffer *pointer, string file);
 void print(buffer* pointer); 
+
+
 #endif

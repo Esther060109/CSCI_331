@@ -76,4 +76,82 @@ void parsing (int argc, char** argv, buffer* pointer, string file, ofstream& txt
 
 }
 
+void parsingLengthFile(int argc, char** argv, buffer* pointer, string csvFile, ofstream& lengthFile)
+{
+    ifstream inFile(csvFile);
+    string line;
+    getline(inFile, line); // skip CSV header
 
+    while(getline(inFile, line))
+    {
+        stringstream ss(line);
+        pointer->length = line.length();
+
+        string temp;
+        getline(ss, temp, ','); pointer->zip = atoi(temp.c_str());
+        getline(ss, pointer->place_name, ',');
+        getline(ss, pointer->state, ',');
+        getline(ss, pointer->county, ',');
+        getline(ss, temp, ','); pointer->latitude = atof(temp.c_str());
+        getline(ss, temp, ','); pointer->longitude = atof(temp.c_str());
+
+        lengthFile << pointer->length << "," << pointer->zip << "," << pointer->place_name << "," 
+                   << pointer->state << "," << pointer->county << "," << pointer->latitude << "," 
+                   << pointer->longitude << endl;
+    }
+}
+
+bool readLengthRecord(ifstream& inFile, buffer* pointer)
+{
+    string line;
+    if(!getline(inFile, line)) return false;
+
+    stringstream ss(line);
+    string temp;
+    getline(ss, temp, ','); pointer->length = stoi(temp);
+    getline(ss, temp, ','); pointer->zip = stoi(temp);
+    getline(ss, pointer->place_name, ',');
+    getline(ss, pointer->state, ',');
+    getline(ss, pointer->county, ',');
+    getline(ss, temp, ','); pointer->latitude = atof(temp.c_str());
+    getline(ss, temp, ','); pointer->longitude = atof(temp.c_str());
+
+    return true;
+}
+
+void writeHeaderRecord(ofstream& out, HeaderRecord* header)
+{
+    stringstream ss;
+    ss << header->file_type << "," << header->version << "," << 0 << "," 
+       << header->record_count << "," << header->field_count << "," << header->primary_key << ",";
+    for(auto &name : header->field_names) ss << name << ",";
+    ss << endl;
+    header->header_size = ss.str().size();
+    out << ss.str();
+}
+
+void readHeaderRecord(ifstream& in, HeaderRecord* header)
+{
+    string line;
+    getline(in, line);
+    stringstream ss(line);
+    string temp;
+    getline(ss, header->file_type, ',');
+    getline(ss, temp, ','); header->version = stoi(temp);
+    getline(ss, temp, ','); header->header_size = stoi(temp);
+    getline(ss, temp, ','); header->record_count = stoi(temp);
+    getline(ss, temp, ','); header->field_count = stoi(temp);
+    getline(ss, header->primary_key, ',');
+    header->field_names.clear();
+    while(getline(ss, temp, ',')) header->field_names.push_back(temp);
+}
+
+unsigned int countCSVRecords(string csvFile)
+{
+    ifstream inFile(csvFile);
+    if(!inFile.is_open()) return 0;
+    string line; unsigned int count = 0;
+    getline(inFile, line); // skip header
+    while(getline(inFile, line)) count++;
+    return count;
+}
