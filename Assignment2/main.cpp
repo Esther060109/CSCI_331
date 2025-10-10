@@ -23,11 +23,6 @@ int main(int argc, char** argv)
     ofstream txtFile; //ofstream behaves like cout<<, creating a file for regular postal codes
     printf("=== Processing Regular CSV File ===\n");
 
-    //call parsing function for organized postal codes. 
-    string file1 = "us_postal_codes.csv";
-    txtFile.open("txtFile.txt"); //opens the file we just made
-    parsing(argc, argv, &myBuffer, file1, txtFile); 
-    txtFile.close(); 
 
     printf("\n=== Processing Randomized CSV File ===\n");
     
@@ -42,6 +37,32 @@ int main(int argc, char** argv)
     printf("  - txtFile.txt\n");
     printf("  - txtFileRandom.txt\n");
     
+    // REQUIREMENT: Read and unpack length-indicated files
+    printf("\n=== READING LENGTH-INDICATED FILES ===\n");
+    vector<buffer> unpackedRecords;
+    
+    // ASSIGNMENT REQUIREMENT: Read and unpack the length-indicated file we just created
+    // This demonstrates the buffer class reading length-indicated format
+    readLengthIndicatedFile("txtFileRandom.txt", unpackedRecords);
+    
+    // ASSIGNMENT REQUIREMENT: Generate alphabetical state table showing extreme ZIP codes
+    // Required: "alphabetical listing of state IDs (two character), one state per row,
+    // where for each row, the Easternmost, Westernmost, Northernmost, and Southernmost 
+    // Zip Code in that state is listed, in that order"
+    printf("\n=== GENERATING STATE ANALYSIS TABLE ===\n");
+    generateStateTable(unpackedRecords);  // Analyze all records to find extremes
+    printStateTable();                    // Display the required alphabetical table
+    
+    // Display first few unpacked records to verify length-indicated processing works
+    printf("\nFirst 3 unpacked records:\n");
+    for(int i = 0; i < 3 && i < unpackedRecords.size(); i++) {
+        buffer* record = &unpackedRecords[i];
+        printf("ZIP %u: %s, %s, %s (%.4f, %.4f)\n", 
+               record->zip, record->place_name.c_str(),
+               record->state.c_str(), record->county.c_str(),
+               record->latitude, record->longitude);
+    }
     
     return 0; 
 }
+
