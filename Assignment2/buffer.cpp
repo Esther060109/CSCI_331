@@ -289,3 +289,50 @@ void printStateTable() {
     }
 }
 
+//lines added :Loana
+/**
+ * Read a single length-indicated record from filename using the file offset from index.
+ */
+bool readRecordAtOffset(const std::string& filename, std::streampos offset, buffer& outRecord) {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in.is_open()) {
+        std::cerr << "Error: cannot open file " << filename << '\n';
+        return false;
+    }
+    in.clear();
+    in.seekg(offset);
+    if (!in.good()) {
+        std::cerr << "Error: seek failed to offset " << static_cast<long long>(offset) << '\n';
+        in.close();
+        return false;
+    }
+    std::string line;
+    if (!std::getline(in, line)) {
+        std::cerr << "Error: cannot read record at offset " << static_cast<long long>(offset) << '\n';
+        in.close();
+        return false;
+    }
+    in.close();
+    return unpackRecord(line, outRecord);
+}
+
+/**
+ * Write a header record into a length-indicated file.
+ */
+void writeHeaderRecord(std::ofstream& outStream, const std::string& headerText) {
+    if (!outStream.is_open()) return;
+    std::string header = headerText;
+    // Header line format: [length],[header-text]\n
+    outStream << header.length() << "," << header << "\n";
+}
+
+/**
+ * Read header line from an input file stream (first line)
+ */
+bool readHeaderLine(std::ifstream& inStream, std::string& outHeader) {
+    if (!inStream.is_open()) return false;
+    inStream.clear();
+    inStream.seekg(0);
+    if (!std::getline(inStream, outHeader)) return false;
+    return true;
+}

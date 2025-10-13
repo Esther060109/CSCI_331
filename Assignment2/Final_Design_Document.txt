@@ -1,0 +1,63 @@
+Zip Code Group Project 2.0 - Final Design Document (Draft)
+---------------------------------------------------------
+
+1. Overview
+   - Purpose: Convert CSV -> length-indicated files, build and use a primary-key index to permit O(1) lookups of ZIP records without loading entire data files into RAM.
+
+2. Header Record Architecture (data file)
+   - file structure type: "length-indicated-csv-v1"
+   - version: 1
+   - header record size in bytes: variable (written as [header_length],[header_text])
+   - size format type: ASCII
+   - size of sizes: using ASCII decimal length (not binary)
+   - size inclusion flag: FALSE (the header length indicates the length of the header-text only, not including the length digits + comma)
+   - primary key index file name: provided by user or derived: <datafile>.idx
+   - record count: (not stored currently; can be added)
+   - count of fields per record: 6
+     Fields (ordinal):
+       1. zip (unsigned int) -> primary key
+       2. place_name (string)
+       3. state (string)
+       4. county (string)
+       5. latitude (double)
+       6. longitude (double)
+   - Notes:
+       - Header line is first line: [len],[comma-separated-field-names]
+       - Each data record is on its own line and has syntax:
+         [data_length],[zip],[place],[state],[county],[latitude],[longitude]
+       - Data_length is the number of characters in the CSV portion after the comma (ASCII count).
+       - Index entries are written as: zip,offset\n offset is the file byte position pointing to the start of the record line.
+
+3. Buffer classes and responsibilities
+   - buffer (struct): holds a single record (zip, length, place_name, state, county, latitude, longitude).
+   - parsing() function: converts CSV to length-indicated file (writes header first).
+   - unpackRecord(): parses a length-indicated single-line into buffer struct.
+   - readRecordAtOffset(): reads one record from a given file offset and unpacks it.
+
+4. PrimaryKeyIndex
+   - buildIndex(dataFilename, indexFilename): scan data file, writing "zip,offset" for each record.
+   - loadIndex(indexFilename, map): read index and load into an unordered_map<zip, offset>.
+   - search: use the map to locate offset; call readRecordAtOffset to read exactly one record.
+
+5. Memory constraints
+   - Only stored in RAM:
+       - header text (string)
+       - primary key index map
+       - an unpacked `buffer` for the queried record (one at a time)
+   - Entire data file content never loaded into RAM.
+
+6. Test plan summary
+   - Create two data files (original CSV -> one length-indicated, randomized CSV -> one length-indicated)
+   - Build indexes for both files.
+   - For each data/index pair:
+       - Run program with multiple -Z flags (valid and at least one invalid).
+       - Confirm output shows labeled fields for found zips, not-found message for invalid zips.
+       - Confirm that reordering columns in XLSX/CSV does not change correct search results (the parsing code depends on a known schema order; if columns are reordered in CSV, add a mapping stage).
+
+7. Doxygen & documentation
+   - All public functions have Doxygen comments.
+   - Doxygen generated PDF included in deliverables.
+
+8. Future improvements
+   - Store record-count and other header metadata (stale-index flag, whether the length includes itself).
+   - Support binary header with fixed-sized integers for speed.

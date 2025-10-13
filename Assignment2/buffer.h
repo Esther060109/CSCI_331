@@ -54,4 +54,25 @@ void generateStateTable(vector<buffer>& records);
 // Displays state IDs with their easternmost, westernmost, northernmost, southernmost zip codes
 void printStateTable();
 
+// Lines addes :Loana
+
+/// Read a single record from a length-indicated file at the given byte offset.
+/// @param filename length-indicated file
+/// @param offset byte offset where the record begins (should be the beginning of the line)
+/// @param outRecord parsed buffer struct (one record only)
+/// @return true on success
+bool readRecordAtOffset(const std::string& filename, std::streampos offset, buffer& outRecord);
+
+/// Write a simple header record to a length-indicated file (used when creating a file).
+/// Header is written as: [header_length],[header_text]\n
+/// @param outStream open ofstream to write header into (must be open & at file start)
+/// @param headerText textual header describing schema
+void writeHeaderRecord(std::ofstream& outStream, const std::string& headerText);
+
+/// Read and return the header line (first line) from an already-open input file stream.
+/// @param inStream input stream positioned at beginning
+/// @param outHeader receives the header line (full line)
+/// @return true if read
+bool readHeaderLine(std::ifstream& inStream, std::string& outHeader);
+
 #endif
