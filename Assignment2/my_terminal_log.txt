@@ -1,0 +1,34 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20251016205639
+Username: MSI\freck
+RunAs User: MSI\freck
+Configuration Name: 
+Machine: MSI (Microsoft Windows NT 10.0.26100.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command try { . "c:\Users\freck\AppData\Local\Programs\Microsoft VS Code\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Process ID: 38272
+PSVersion: 5.1.26100.6899
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.6899
+BuildVersion: 10.0.26100.6899
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\\Users\\freck\\Documents\\GitHub\\CSCI_331\\my_terminal_log.txt
+PS C:\Users\freck\Documents\GitHub\CSCI_331> g++ -o main main.cpp buffer.cpp
+
+PS C:\Users\freck\Documents\GitHub\CSCI_331> cd Assignment2
+PS C:\Users\freck\Documents\GitHub\CSCI_331\Assignment2> g++ -o main main.cpp buffer.cpp
+
+PS C:\Users\freck\Documents\GitHub\CSCI_331\Assignment2> .\main.exe
+First 3 unpacked records:
+ZIP 96960: Marshall Islands, MH, Marshall Islands (7.1128, 171.2370)
+ZIP 96944: Kosrae, FM,  (7.1383, 151.5030)
+ZIP 96943: Yap, FM,  (7.1383, 151.5030)
+PS C:\Users\freck\Documents\GitHub\CSCI_331\Assignment2> stop-Transcript
+**********************
+Windows PowerShell transcript end
+End time: 20251016210433
+**********************
