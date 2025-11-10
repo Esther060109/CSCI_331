@@ -1,0 +1,25 @@
+Zip Code Group Project 2.0 - User Document
+---------------------------------------
+
+Build:
+  g++ -std=c++17 -O2 main.cpp buffer.cpp PrimaryKeyIndex.cpp -o zipcode_app
+
+Files:
+  - <dataFile> : length-indicated CSV-like file (header + records)
+  - <indexFile>: primary key index text file created by the program
+
+Interpretation of output:
+  - For each found ZIP, program prints a labeled single record:
+    ZIP: 56301
+    Place Name: SomePlace
+    State: MN
+    County: SomeCounty
+    Latitude: 45.1234
+    Longitude: -93.1234
+  - If not found:
+    ZIP 99999 not found in index.
+
+Notes:
+  - The program keeps only the index in RAM and one record at a time (per search).
+  - The length-indicated data file must have a header (first line) and then one record per line.
+  - Index files are text CSV: zip,offset\n where offset is a byte offset into data file.
