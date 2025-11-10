@@ -23,11 +23,6 @@ int main(int argc, char** argv)
     ofstream txtFile; //ofstream behaves like cout<<, creating a file for regular postal codes
     printf("=== Processing Regular CSV File ===\n");
 
-    //call parsing function for organized postal codes. 
-    string file1 = "us_postal_codes.csv";
-    txtFile.open("txtFile.txt"); //opens the file we just made
-    parsing(argc, argv, &myBuffer, file1, txtFile); 
-    txtFile.close(); 
 
     printf("\n=== Processing Randomized CSV File ===\n");
     
@@ -42,51 +37,31 @@ int main(int argc, char** argv)
     printf("  - txtFile.txt\n");
     printf("  - txtFileRandom.txt\n");
     
-    // length-indicated files
-    printf("\n=== Creating Length-Indicated Files ===\n");
-
-    ofstream lengthFile1("length_us_postal_codes.txt");
-    HeaderRecord header1; 
-    header1.record_count = countCSVRecords(file1);
-    writeHeaderRecord(lengthFile1, &header1);
-    parsingLengthFile(argc, argv, &myBuffer, file1, lengthFile1); 
-    lengthFile1.close();
-
-    ofstream lengthFile2("length_us_postal_codes_random.txt");
-    HeaderRecord header2; 
-    header2.record_count = countCSVRecords(file2);
-    writeHeaderRecord(lengthFile2, &header2);
-    parsingLengthFile(argc, argv, &myBuffer, file2, lengthFile2); 
-    lengthFile2.close();
-
-    // read/unpack length-indicated files
-    printf("\n=== Reading Length-Indicated Records ===\n");
-
-    ifstream readFile1("length_us_postal_codes.txt");
-    HeaderRecord readHeader1;
-    readHeaderRecord(readFile1, &readHeader1);
-    cout << "Original CSV header: " << readHeader1.file_type 
-         << ", Records: " << readHeader1.record_count << endl;
-
-    while(readLengthRecord(readFile1, &myBuffer))
-    {
-        cout << myBuffer.zip << ", " << myBuffer.place_name << ", " 
-             << myBuffer.state << ", " << myBuffer.county << ", " 
-             << myBuffer.latitude << ", " << myBuffer.longitude << endl;
+    // REQUIREMENT: Read and unpack length-indicated files
+    printf("\n=== READING LENGTH-INDICATED FILES ===\n");
+    vector<buffer> unpackedRecords;
+    
+    // ASSIGNMENT REQUIREMENT: Read and unpack the length-indicated file we just created
+    // This demonstrates the buffer class reading length-indicated format
+    readLengthIndicatedFile("txtFileRandom.txt", unpackedRecords);
+    
+    // ASSIGNMENT REQUIREMENT: Generate alphabetical state table showing extreme ZIP codes
+    // Required: "alphabetical listing of state IDs (two character), one state per row,
+    // where for each row, the Easternmost, Westernmost, Northernmost, and Southernmost 
+    // Zip Code in that state is listed, in that order"
+    printf("\n=== GENERATING STATE ANALYSIS TABLE ===\n");
+    generateStateTable(unpackedRecords);  // Analyze all records to find extremes
+    printStateTable();                    // Display the required alphabetical table
+    
+    // Display first few unpacked records to verify length-indicated processing works
+    printf("\nFirst 3 unpacked records:\n");
+    for(int i = 0; i < 3 && i < unpackedRecords.size(); i++) {
+        buffer* record = &unpackedRecords[i];
+        printf("ZIP %u: %s, %s, %s (%.4f, %.4f)\n", 
+               record->zip, record->place_name.c_str(),
+               record->state.c_str(), record->county.c_str(),
+               record->latitude, record->longitude);
     }
-    readFile1.close();
-
-    ifstream readFile2("length_us_postal_codes_random.txt");
-    HeaderRecord readHeader2;
-    readHeaderRecord(readFile2, &readHeader2);
-    cout << "Randomized CSV header: " << readHeader2.file_type 
-         << ", Records: " << readHeader2.record_count << endl;
-
-    while(readLengthRecord(readFile2, &myBuffer))
-    {
-        cout << myBuffer.zip << ", " << myBuffer.place_name << ", " 
-             << myBuffer.state << ", " << myBuffer.county << ", " 
-             << myBuffer.latitude << ", " << myBuffer.longitude << endl;
-    }
-    readFile2.close();
+    
+    return 0; 
 }
