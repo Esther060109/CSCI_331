@@ -18,6 +18,10 @@ public:
     void PrintSummary() const;
     int GetTotalRecords() const;
     int GetTotalBlocks() const;
+    bool Search(const std::string& key, std::string& outRecord);
+    void Insert(const std::string& record);
+    bool Delete(const std::string& key);
+
 };
 
 #endif

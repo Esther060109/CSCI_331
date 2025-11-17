@@ -39,3 +39,58 @@ int BlockedSequenceSet::GetTotalRecords() const {
 int BlockedSequenceSet::GetTotalBlocks() const {
     return blocks.size();
 }
+
+bool BlockedSequenceSet::Search(const std::string& key, std::string& outRecord)
+{
+    for (const Block& block : blocks)
+    {
+        for (const std::string& rec : block.getRecords())
+        {
+            // Each record is CSV; extract the key (Zip Code)
+            std::string recordKey = rec.substr(0, rec.find(','));
+
+            if (recordKey == key)
+            {
+                outRecord = rec;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+void BlockedSequenceSet::Insert(const std::string& record)
+{
+    std::string key = record.substr(0, record.find(','));
+
+    for (Block& block : blocks)
+    {
+        if (block.GetRecordCount() == 0 ||
+            key <= block.getHighestKey())
+        {
+            block.InsertSorted(record);
+            return;
+        }
+    }
+
+    // if no block found, append to last block
+    if (blocks.empty() || !blocks.back().HasSpace(record))
+    {
+        blocks.push_back(Block(blocks.size(), 512));
+    }
+
+    blocks.back().InsertSorted(record);
+}
+
+bool BlockedSequenceSet::Delete(const std::string& key)
+{
+    for (Block& block : blocks)
+    {
+        if (block.DeleteRecord(key))
+        {
+            return true;
+        }
+    }
+    return false;
+}

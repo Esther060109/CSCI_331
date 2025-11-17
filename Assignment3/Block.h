@@ -33,6 +33,13 @@ public:
     void Read(std::ifstream &in, const std::string &headerLine);
     void PrintSummary() const;
     void DumpContents() const;
+
+    void InsertSorted(const std::string& rec);
+    bool DeleteRecord(const std::string& key);
+    std::string getHighestKey() const;
+    bool HasSpace(const std::string& rec) const;
+    const std::vector<std::string>& getRecords() const { return records; }
+
 };
 
 #endif
