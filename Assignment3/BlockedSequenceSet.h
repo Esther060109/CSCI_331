@@ -18,6 +18,11 @@ public:
     void PrintSummary() const;
     int GetTotalRecords() const;
     int GetTotalBlocks() const;
+    const std::vector<Block> getBlocks() const;
+    const std::vector<std::string> getRecords() const;
+    void dumpPhysicalOrder();
+    void dumpLogicOrder();
+
 };
 
 #endif

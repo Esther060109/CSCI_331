@@ -16,6 +16,8 @@ private:
     std::vector<std::string> records;
 
 public:
+    // ...existing code...
+    const std::vector<std::string>& getRecords() const;
     Block();
     Block(int rbn, int maxBytesPerBlock);
 
@@ -33,6 +35,7 @@ public:
     void Read(std::ifstream &in, const std::string &headerLine);
     void PrintSummary() const;
     void DumpContents() const;
+    void DumpLogicOrder() const;
 };
 
 #endif
