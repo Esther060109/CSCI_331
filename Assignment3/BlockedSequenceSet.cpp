@@ -1,4 +1,12 @@
 #include "BlockedSequenceSet.h"
+#include "Block.h"
+
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <vector>
+#include <cstdint>
+using namespace std;
 
 BlockedSequenceSet::BlockedSequenceSet(const std::string& fname) : filename(fname) {
     blocks.clear();
@@ -93,4 +101,58 @@ bool BlockedSequenceSet::Delete(const std::string& key)
         }
     }
     return false;
+}
+
+const std::vector<Block> BlockedSequenceSet::getBlocks() const {
+    return blocks;
+}
+
+const std::vector<std::string> BlockedSequenceSet::getRecords() const 
+{
+    std::vector<std::string> allRecords;
+    for (const auto& block : blocks) {
+        const auto& recs = block.getRecords();
+        allRecords.insert(allRecords.end(), recs.begin(), recs.end());
+    }
+    return allRecords;
+}
+
+void BlockedSequenceSet::dumpPhysicalOrder()
+{ 
+    for(const Block& block: blocks) 
+    {
+        block.DumpContents();
+        
+    }
+}
+
+void BlockedSequenceSet::dumpLogicOrder()
+{
+    if (blocks.empty()) return;
+
+    // Build a map from RBN to Block pointer for quick lookup
+    std::map<int, const Block*> rbnToBlock;
+    for (const auto& block : blocks) {
+        rbnToBlock[block.GetRBN()] = &block;
+    }
+
+    // Find the logical head block (the one with no predecessor)
+    int headRBN = -1;
+    for (const auto& block : blocks) {
+        if (block.GetPrevRBN() == -1) {
+            headRBN = block.GetRBN();
+            break;
+        }
+    }
+    if (headRBN == -1) return; // No head found
+
+    // Traverse blocks in logical order
+    int currentRBN = headRBN;
+    while (rbnToBlock.count(currentRBN)) {
+        const Block* block = rbnToBlock[currentRBN];
+        block->DumpLogicOrder();
+        int nextRBN = block->GetNextRBN();
+        if (nextRBN == -1 || nextRBN == currentRBN) break;
+        currentRBN = nextRBN;
+    }
 }

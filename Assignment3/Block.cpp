@@ -1,4 +1,22 @@
 #include "Block.h"
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+void Block::DumpLogicOrder() const {
+    std::cout << "RBN " << RBN << " PREV=" << prevRBN << " NEXT=" << nextRBN << " | ";
+    for (const auto& record : records) {
+        std::string key = record.substr(0, record.find(','));
+        std::cout << key << " ";
+    }
+    std::cout << "RBN " << RBN << std::endl;
+    // If you have an avail list, print "*available*" for available blocks
+}
+
+const std::vector<std::string>& Block::getRecords() const {
+    return records;
+}
+#include "Block.h"
 
 Block::Block() : RBN(-1), prevRBN(-1), nextRBN(-1), blockSize(512), usedBytes(0) {}
 
@@ -18,49 +36,4 @@ void Block::Write(std::ofstream &out) const {
 
 void Block::PrintSummary() const {
     //std::cout << "Block RBN: " << RBN << ", Records: " << records.size() << "\n";
-}
-
-
-void Block::InsertSorted(const std::string& rec)
-{
-    std::string key = rec.substr(0, rec.find(','));
-
-    auto it = records.begin();
-    for (; it != records.end(); ++it)
-    {
-        std::string existingKey = it->substr(0, it->find(','));
-        if (key < existingKey)
-            break;
-    }
-
-    records.insert(it, rec);
-    usedBytes += rec.size();
-}
-
-bool Block::DeleteRecord(const std::string& key)
-{
-    for (auto it = records.begin(); it != records.end(); ++it)
-    {
-        std::string recKey = it->substr(0, it->find(','));
-
-        if (recKey == key)
-        {
-            usedBytes -= it->size();
-            records.erase(it);
-            return true;
-        }
-    }
-    return false;  // not found
-}
-
-std::string Block::getHighestKey() const
-{
-    if (records.empty()) return "";
-
-    const std::string& rec = records.back();
-    return rec.substr(0, rec.find(','));
-}
-
-bool Block::HasSpace(const std::string& rec) const {
-    return (usedBytes + rec.size() <= blockSize);
 }
