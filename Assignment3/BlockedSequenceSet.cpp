@@ -1,3 +1,11 @@
+/**
+ * @file BlockedSequenceSet.cpp
+ * @brief Implements the BlockedSequenceSet class, which manages a collection
+ *        of fixed-size blocks storing variable-length string records.
+ *
+ * This file defines all core operations for adding, searching, inserting,
+ * deleting, serializing, and displaying records across multiple blocks.
+ */
 #include "BlockedSequenceSet.h"
 #include "Block.h"
 
@@ -8,10 +16,25 @@
 #include <cstdint>
 using namespace std;
 
+/**
+ * @brief Constructs a BlockedSequenceSet associated with a target filename.
+ *
+ * @param fname Name of the file to which blocks will eventually be written.
+ *
+ * Initializes an empty block vector.
+ */
 BlockedSequenceSet::BlockedSequenceSet(const std::string& fname) : filename(fname) {
     blocks.clear();
 }
 
+/**
+ * @brief Adds a record to the last block or creates a new block if necessary.
+ *
+ * @param rec The record string to be added.
+ *
+ * If the last block does not have enough space for the record, a new block
+ * is created. Each new block has a default size of 512 bytes.
+ */
 void BlockedSequenceSet::AddRecord(const std::string& rec) {
     if (blocks.empty() || blocks.back().GetFreeSpace() < static_cast<int>(rec.size())) {
         Block newBlock(blocks.size(), 512);
@@ -20,6 +43,12 @@ void BlockedSequenceSet::AddRecord(const std::string& rec) {
     blocks.back().AddRecord(rec);
 }
 
+/**
+ * @brief Serializes all blocks to the configured file in human-readable format.
+ *
+ * Each block is written using Block::Write().
+ * Existing file content is overwritten.
+ */
 void BlockedSequenceSet::WriteToFile() {
     std::ofstream out(filename);
     if (!out.is_open()) {
@@ -30,6 +59,11 @@ void BlockedSequenceSet::WriteToFile() {
     out.close();
 }
 
+/**
+ * @brief Prints a summary of the BlockedSequenceSet.
+ *
+ * Includes total records, total blocks, filename, and per-block summaries.
+ */
 void BlockedSequenceSet::PrintSummary() const {
     std::cout << "BlockedSequenceSet Summary:\n";
     std::cout << "File: " << filename << "\n";
@@ -38,16 +72,33 @@ void BlockedSequenceSet::PrintSummary() const {
     for (const auto& block : blocks) block.PrintSummary();
 }
 
+/**
+ * @brief Returns the total number of records across all blocks.
+ *
+ * @return Total record count.
+ */
 int BlockedSequenceSet::GetTotalRecords() const {
     int total = 0;
     for (const auto& block : blocks) total += block.GetRecordCount();
     return total;
 }
 
+/**
+ * @brief Returns the total number of blocks in the sequence set.
+ *
+ * @return Number of blocks.
+ */
 int BlockedSequenceSet::GetTotalBlocks() const {
     return blocks.size();
 }
 
+/**
+ * @brief Searches for a record by its key (first CSV field).
+ *
+ * @param key The key to search for.
+ * @param outRecord Reference to string to store the found record.
+ * @return True if a matching record was found, false otherwise.
+ */
 bool BlockedSequenceSet::Search(const std::string& key, std::string& outRecord)
 {
     for (const Block& block : blocks)
@@ -67,7 +118,14 @@ bool BlockedSequenceSet::Search(const std::string& key, std::string& outRecord)
     return false;
 }
 
-
+/**
+ * @brief Inserts a record into the appropriate block in sorted order.
+ *
+ * @param record The CSV record string to insert.
+ *
+ * This method attempts to maintain records sorted by key within each block.
+ * If no suitable block exists, a new block is created at the end.
+ */
 void BlockedSequenceSet::Insert(const std::string& record)
 {
     std::string key = record.substr(0, record.find(','));
@@ -91,6 +149,12 @@ void BlockedSequenceSet::Insert(const std::string& record)
     blocks.back().InsertSorted(record);
 }
 
+/**
+ * @brief Deletes a record by key from the sequence set.
+ *
+ * @param key The key identifying the record to delete.
+ * @return True if deletion succeeded, false if key not found.
+ */
 bool BlockedSequenceSet::Delete(const std::string& key)
 {
     for (Block& block : blocks)
@@ -103,10 +167,21 @@ bool BlockedSequenceSet::Delete(const std::string& key)
     return false;
 }
 
+
+/**
+ * @brief Returns a copy of the internal vector of blocks.
+ *
+ * @return Vector of Block objects.
+ */
 const std::vector<Block> BlockedSequenceSet::getBlocks() const {
     return blocks;
 }
 
+/**
+ * @brief Returns a flattened list of all records across all blocks.
+ *
+ * @return Vector of all record strings.
+ */
 const std::vector<std::string> BlockedSequenceSet::getRecords() const 
 {
     std::vector<std::string> allRecords;
@@ -117,6 +192,11 @@ const std::vector<std::string> BlockedSequenceSet::getRecords() const
     return allRecords;
 }
 
+/**
+ * @brief Dumps the physical order of all blocks.
+ *
+ * Physical order corresponds to the order in the vector, not RBN sequence.
+ */
 void BlockedSequenceSet::dumpPhysicalOrder()
 { 
     for(const Block& block: blocks) 
@@ -126,6 +206,11 @@ void BlockedSequenceSet::dumpPhysicalOrder()
     }
 }
 
+/**
+ * @brief Dumps the logical order of all blocks based on RBN links.
+ *
+ * Traverses blocks by following the `nextRBN` links starting from the head.
+ */
 void BlockedSequenceSet::dumpLogicOrder()
 {
     if (blocks.empty()) return;
