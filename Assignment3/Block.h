@@ -73,7 +73,16 @@ private:
     std::vector<std::string> records;
 
 public:
-    // ...existing code...
+/**
+ * @brief Prints the block contents in logical order showing:
+ *        - RBN
+ *        - Previous and next RBN
+ *        - Keys (first field of each record)
+ *
+ * Useful for debugging the physical/logical organization of the block chain.
+ */
+void DumpLogicOrder() const;
+
     const std::vector<std::string>& getRecords() const;
 
     /**
