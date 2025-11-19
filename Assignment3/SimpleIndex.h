@@ -9,6 +9,13 @@
 
 using namespace std; 
 
+/**
+ * @class simpleIndex
+ *  @brief Implements a simple index structure mapping highest keys to block numbers.
+ * This class provides functionalities to build the index from a data file,
+ * write the index to a file, read the index from a file, dump the index contents
+ * and find the block number for a given key.
+ */
 class simpleIndex 
 {
     private:
