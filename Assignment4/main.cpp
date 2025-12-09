@@ -11,8 +11,6 @@
 #include "PrimaryKeyIndex.h"
 #include "BPlusTree.h"
 
-using namespace std;
-
 int main(int argc, char** argv) {
     std::cout << "=== Processing Regular CSV File ===\n" << std::endl;
 
@@ -90,7 +88,7 @@ int main(int argc, char** argv) {
     }
     
     // --- Test searching by State using the B+tree file as a sequence set ---
-    std::string stateKey = "CA"; 
+    std::string stateKey = "FL"; 
     std::vector<std::string> stateResults;
     bptree.SearchByState(stateKey, stateResults);
 
