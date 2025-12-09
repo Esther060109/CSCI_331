@@ -16,6 +16,7 @@ public:
     // Constructor: specify filename and block size
     BPlusTree(const std::string& fname, int blkSize);
 
+    void Index(); 
     // Insert a record into the B+ Tree
     void Insert(const std::string& record);
 
@@ -31,6 +32,7 @@ public:
     // Access underlying blocked sequence set
     BlockedSequenceSet& GetSequenceSet() { return seqSet; }
 
+    void Dump() const; // Dump the B+ tree structure
 private:
     BlockedSequenceSet seqSet;  // logical storage of blocks
 };
