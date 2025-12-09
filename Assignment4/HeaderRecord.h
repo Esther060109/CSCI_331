@@ -51,6 +51,18 @@ private:
      */
     int recordCount;
 
+    /**
+     * @brief Additional metadata for indexed files
+     *
+     * These fields may be used if the file implements an index structure.
+     */
+    int rootRBN; // RBN of the root block (for indexed files)
+
+    /**
+     * @brief Height of the index tree
+     */
+    int treeHeight; // Height of the index tree (for indexed files)
+
 public:
     /**
      * @brief Default constructor.
@@ -135,4 +147,4 @@ public:
     void Print() const;
 };
 
-#endif
+#endif // HEADERRECORD_H

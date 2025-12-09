@@ -108,13 +108,69 @@ public:
      * @return Number of Block objects currently stored.
      */
     int GetTotalBlocks() const;
-    const std::vector<Block> getBlocks() const;        // Returns all blocks
-    const std::vector<std::string> getRecords() const; // Returns all records
-    void dumpPhysicalOrder();                           // Dump blocks in physical order
-    void dumpLogicOrder();                              // Dump blocks in logical order
-    bool Search(const std::string& key, std::string& outRecord); // search by key
-    void Insert(const std::string& record);                       // insert a record
-    bool Delete(const std::string& key);                          // delete by key
+
+    /**
+     * @brief Provides const access to all blocks in the sequence set.
+     *
+     * @return Vector of Block objects in RBN order
+     */
+    const std::vector<Block> getBlocks() const;
+
+    /**
+     * @brief Collects all records from all blocks into a single vector.
+     *
+     * @return Vector containing all records from the entire sequence set
+     */
+    const std::vector<std::string> getRecords() const;
+
+    /**
+     * @brief Dumps all blocks in physical (RBN) order to console.
+     *
+     * Shows blocks exactly as they appear in the file, useful for verifying
+     * disk layout and block organization.
+     */
+    void dumpPhysicalOrder();
+
+    /**
+     * @brief Dumps all blocks in logical order following RBN links.
+     *
+     * Traverses blocks via prevRBN/nextRBN chain to show logical sequence,
+     * useful for verifying doubly-linked block connectivity.
+     */
+    void dumpLogicOrder();
+
+    /**
+     * @brief Searches for a record by primary key across all blocks.
+     *
+     * Iterates through all blocks and records to find a match. This is O(n)
+     * and is used before B+ tree index is built. After building the index,
+     * BPlusTree::Search() should be used for O(log n) performance.
+     *
+     * @param key Primary key to search for (ZIP code)
+     * @param outRecord Reference to string where matching record is stored
+     * @return true if record found; false if not found
+     */
+    bool Search(const std::string& key, std::string& outRecord);
+
+    /**
+     * @brief Inserts a record into the sequence set (with block management).
+     *
+     * Similar to AddRecord() but may apply additional sorting or linking logic
+     * to ensure proper block organization for subsequent tree building.
+     *
+     * @param record String record to insert
+     */
+    void Insert(const std::string& record);
+
+    /**
+     * @brief Deletes a record from the sequence set by primary key.
+     *
+     * Searches all blocks for the key and removes the record if found.
+     *
+     * @param key Primary key of record to delete
+     * @return true if record found and deleted; false if not found
+     */
+    bool Delete(const std::string& key);
 };
 
 #endif  // BLOCKEDSEQUENCESET_H
