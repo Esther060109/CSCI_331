@@ -1,0 +1,230 @@
+
+CSCI 331 - Assignment 4 Test Document
+Zip Code Blocked Sequence Set with B+ Tree Index
+
+1. COMPILATION
+
+Goal: Make sure all source files compile into a single executable.
+
+Command used:
+
+    g++ -std=c++17 -o assignment4.exe main.cpp Block.cpp BlockedSequenceSet.cpp \
+        BPlusTree.cpp buffer.cpp HeaderRecord.cpp PrimaryKeyIndex.cpp
+
+Result: The project compiled successfully and produced assignment4.exe with no
+compiler errors. We did have to clean up a few issues first:
+
+- There was an extra main() defined inside BPlusTree.cpp, which caused a
+  “multiple definition of main” linker error. We removed that and kept main()
+  only in main.cpp.
+- We also fixed some namespace / header problems (e.g., making sure we used
+  std:: explicitly in a few places).
+
+After those changes, the code compiled cleanly.
+
+
+2. PROGRAM EXECUTION TESTS
+
+Once the program compiled, we ran the executable to see what it actually does.
+
+Command:
+
+    .\assignment4.exe
+
+
+Test 2.1 – Basic run (no crash)
+
+Purpose:
+- Check that the program starts, runs through main(), and exits without crashing.
+
+Observation:
+- The program runs to completion and prints several labeled sections, such as:
+  "=== Processing Regular CSV File ==="
+  "=== Processing Randomized CSV File ==="
+  "=== GENERATING STATE ANALYSIS TABLE ==="
+  "=== GENERATING BLOCKED SEQUENCE SET FILE ==="
+
+Result: Pass (no runtime errors or crashes).
+
+
+Test 2.2 – BlockedSequenceSet summary
+
+Purpose:
+- Verify that the BlockedSequenceSet file is at least being created and that
+  the summary function works.
+
+Observation:
+- The program prints a summary like:
+
+      BlockedSequenceSet Summary:
+      File: BlockedSequenceSet.dat
+      Total records: 0
+      Total blocks: 0
+
+- This tells us the file is being created, but at this point there were no
+  records actually loaded into the sequence set.
+
+Result:
+- Pass for “file created and summary printed”.
+- Data-related behavior (0 records) needs follow-up (likely input/parse issue).
+
+
+Test 2.3 – B+ Tree index build
+
+Purpose:
+- Check that BPlusTree::BuildStaticIndex() runs and reports its status.
+
+Observation (with empty data):
+- The program prints:
+
+      BuildStaticIndex: no blocks to index.
+      Dumping B+ Tree Structure:
+      No index built.
+      BPlusTree Summary:
+      Root RBN: -1
+      Block size: 512
+      BlockedSequenceSet Summary:
+      File: BlockedSequenceSet.dat
+      Total records: 0
+      Total blocks: 0
+
+- This is consistent with having an empty BlockedSequenceSet: there are no
+  blocks to index, so no B+ tree root is created.
+
+Result:
+- Logic behaves as expected given 0 records (index build fails gracefully).
+- Pass (for graceful behavior with empty data).
+
+
+Test 2.4 – Search by ZIP code (90210)
+
+Purpose:
+- Verify that the search path through the B+ tree (or fallback scan) works,
+  and that it handles “not found” cleanly.
+
+Setup:
+- In main(), the code calls:
+
+      std::string key = "90210";
+      bptree.Search(key, result);
+
+Observation (with empty dataset):
+- Output:
+
+      ZIP 90210 not found
+
+Result:
+- This is the correct behavior for an empty data set.
+- Pass (for “not found” behavior). Verification with real data is still needed
+  once records are loaded.
+
+
+Test 2.5 – Search by State (e.g., MN)
+
+Purpose:
+- Check that the SearchByState function scans the underlying sequence set and
+  handles empty results properly.
+
+Setup:
+- In main(), the code uses:
+
+      std::string stateKey = "MN";
+      bptree.SearchByState(stateKey, stateResults);
+
+Observation (with empty dataset):
+- Output:
+
+      Records for state MN:
+      No records found for state MN.
+
+Result:
+- Correct behavior for an empty data set.
+- Pass (for “no records” path). Again, behavior with real data still needs to
+  be tested later.
+
+
+3. OUTPUT CAPTURE
+
+Used PowerShell’s transcript feature to capture one full run of the program:
+
+    Start-Transcript -Path .\assignment4_run1.txt
+    .\assignment4.exe
+    Stop-Transcript
+
+The file assignment4_run1.txt contains the complete console output from the
+run, including the BlockedSequenceSet summary, B+ tree build messages, and the
+ZIP/state search results. This file can be referenced as the “script” for this
+assignment.
+
+
+4. FILES INCLUDED IN THE BUILD
+
+Header files:
+- Block.h
+- BlockedSequenceSet.h
+- BPlusTree.h
+- buffer.h
+- HeaderRecord.h
+- PrimaryKeyIndex.h
+
+Source files:
+- main.cpp
+- Block.cpp
+- BlockedSequenceSet.cpp
+- BPlusTree.cpp
+- buffer.cpp
+- HeaderRecord.cpp
+- PrimaryKeyIndex.cpp
+
+These are the files used in the compilation command listed in Section 1.
+
+
+5. ISSUES ENCOUNTERED AND FIXES
+
+Issue 1 – Multiple main() definitions  
+- Symptom: Linker error about “multiple definition of `main`”.
+- Cause: BPlusTree.cpp accidentally contained its own main() function.
+- Fix: Removed main() from BPlusTree.cpp and kept main() only in main.cpp.
+  BPlusTree.cpp now only contains method definitions for the BPlusTree class.
+
+Issue 2 – BPlusTree implementation vs. header  
+- Symptom: Undefined reference errors for BPlusTree methods during linking.
+- Cause: The header and source were out of sync while we were refactoring.
+- Fix: Rewrote BPlusTree.cpp to match the interface in BPlusTree.h, including:
+  - BPlusTree constructor
+  - BuildStaticIndex()
+  - Insert()
+  - Search()
+  - SearchByState()
+  - DumpTree()
+  - PrintSummary()
+
+After these fixes, the project compiled and ran without linker errors.
+
+
+6. SUMMARY AND NEXT STEPS
+
+At this stage:
+
+- The project compiles successfully.
+- The main program runs without crashing.
+- The BlockedSequenceSet file is created and summarized correctly, but currently
+  shows 0 records and 0 blocks in the tested run.
+- The B+ tree index build function handles the “no data” case gracefully and
+  reports that no index was built.
+- Search functions for ZIP and state both behave correctly when there is no data:
+  they report that no matching records were found and do not crash.
+
+Next steps for more complete testing (once data is actually loaded into the
+BlockedSequenceSet and BPlusTree):
+
+- Verify that records from the CSV file are correctly parsed and inserted into
+  the sequence set.
+- Confirm that the B+ tree index is built with a non-empty root and entries.
+- Test searching for multiple known ZIP codes and compare results with the
+  original CSV data.
+- Test searching by several states and confirm that returned records all match
+  the requested state.
+- (If implemented) Test insert and delete operations and check consistency of
+  the index and sequence set.
+
