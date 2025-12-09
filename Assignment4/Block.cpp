@@ -5,16 +5,17 @@
 using namespace std;
 
 // Default constructor
-Block::Block() : RBN(-1), prevRBN(-1), nextRBN(-1), blockSize(512), usedBytes(0) {}
+Block::Block() : RBN(-1), prevRBN(-1), nextRBN(-1), blockSize(512), usedBytes(0), type(LEAF_BLOCK) {}
 
 // Constructor with RBN and max bytes
 Block::Block(int rbn_, int maxBytes) 
-    : RBN(rbn_), prevRBN(-1), nextRBN(-1), blockSize(maxBytes), usedBytes(0) {}
+    : RBN(rbn_), prevRBN(-1), nextRBN(-1), blockSize(maxBytes), usedBytes(0), type(LEAF_BLOCK) {}
 
-// Add record (no space check)
+
+    // Add record (no space check)
 bool Block::AddRecord(const std::string& rec) {
     records.push_back(rec);
-    usedBytes += rec.size();
+    usedBytes += static_cast<int>(rec.size());// Update used bytes
     return true;
 }
 
@@ -61,7 +62,7 @@ void Block::InsertSorted(const std::string& rec) {
     auto it = records.begin();
     while (it != records.end() && it->substr(0, it->find(',')) < key) ++it;
     records.insert(it, rec);
-    usedBytes += rec.size();
+    usedBytes += static_cast<int>(rec.size());// Update used bytes
 }
 
 // Check if record fits in block

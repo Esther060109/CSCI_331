@@ -5,6 +5,9 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
+
+
 
 class Block {
 private:
@@ -13,7 +16,15 @@ private:
     int nextRBN;       // Next block RBN
     int blockSize;     // Maximum size of block in bytes
     int usedBytes;     // Bytes currently used
+    
     std::vector<std::string> records;
+   
+    enum BlockType 
+    { 
+        LEAF_BLOCK, 
+        INDEX_BLOCK
+    }; 
+    BlockType type;
 
 public:
     // Constructors
@@ -43,6 +54,10 @@ public:
     void InsertSorted(const std::string& rec);
     bool HasSpace(const std::string& rec) const;
     bool DeleteRecord(const std::string& key);
+
+    
+    BlockType GetType() const { return type; }
+    void SetType(BlockType t) { type = t; }
 };
 
 #endif
