@@ -14,15 +14,15 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    cout << "=== Processing Regular CSV File ===\n" << endl;
+    std::cout << "=== Processing Regular CSV File ===\n" << std::endl;
 
     buffer buf;  
-    string regularCSV   = "us_postal_codes.csv";        
-    string randomizedCSV = "us_postal_codes_randomized.csv";
+    std::string regularCSV   = "us_postal_codes.csv";        
+    std::string randomizedCSV = "us_postal_codes_randomized.csv";
 
-    ofstream txtFileRandom("txtFileRandom.txt");
+    std::ofstream txtFileRandom("txtFileRandom.txt");
     if (!txtFileRandom.is_open()) {
-        cerr << "Error: Cannot open output file txtFileRandom.txt\n";
+        std::cerr << "Error: Cannot open output file txtFileRandom.txt\n";
         return 1;
     }
 
@@ -30,32 +30,32 @@ int main(int argc, char** argv) {
     parsing(argc, argv, &buf, randomizedCSV, txtFileRandom);
     txtFileRandom.close();
 
-    cout << "\n=== Processing Randomized CSV File ===" << endl;
+    std::cout << "\n=== Processing Randomized CSV File ===" << std::endl;
 
-    vector<buffer> unpackedRecords;
+    std::vector<buffer> unpackedRecords;
     readLengthIndicatedFile("txtFileRandom.txt", unpackedRecords);
 
-    cout << "\nFirst 3 unpacked records:" << endl;
+    std::cout << "\nFirst 3 unpacked records:" << std::endl;
     for (size_t i = 0; i < 3 && i < unpackedRecords.size(); ++i) {
         const buffer& rec = unpackedRecords[i];
-        cout << "ZIP " << rec.zip << ": " 
+        std::cout << "ZIP " << rec.zip << ": " 
              << rec.place_name << ", " << rec.state << ", " << rec.county
-             << " (" << rec.latitude << ", " << rec.longitude << ")" << endl;
+             << " (" << rec.latitude << ", " << rec.longitude << ")" << std::endl;
     }
 
-    cout << "\n=== GENERATING STATE ANALYSIS TABLE ===" << endl;
+    std::cout << "\n=== GENERATING STATE ANALYSIS TABLE ===" << std::endl;
     generateStateTable(unpackedRecords);
     printStateTable();
 
-    cout << "\n=== GENERATING BLOCKED SEQUENCE SET FILE ===" << endl;
-    string blockedFileName = "BlockedSequenceSet.dat";
+    std::cout << "\n=== GENERATING BLOCKED SEQUENCE SET FILE ===" << std::endl;
+    std::string blockedFileName = "BlockedSequenceSet.dat";
 
     // Create BSS with only the filename (as constructor expects)
     BlockedSequenceSet bss(blockedFileName);
 
     // Add CSV-converted string records to BSS
     for (auto& rec : unpackedRecords) {
-        string recStr = to_string(rec.zip) + "," + rec.place_name + "," + rec.state + "," +
+        std::string recStr = to_string(rec.zip) + "," + rec.place_name + "," + rec.state + "," +
                         rec.county + "," + to_string(rec.latitude) + "," + to_string(rec.longitude);
         bss.AddRecord(recStr);
     }
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
     // Insert all records into the B+Tree's internal sequence set
     for (auto& rec : unpackedRecords) {
-        string recStr = to_string(rec.zip) + "," + rec.place_name + "," + rec.state + "," +
+        std::string recStr = to_string(rec.zip) + "," + rec.place_name + "," + rec.state + "," +
                         rec.county + "," + to_string(rec.latitude) + "," + to_string(rec.longitude);
         bptree.Insert(recStr);
     }
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     }
     
     // --- Test searching by State using the B+tree file as a sequence set ---
-    std::string stateKey = "MN"; 
+    std::string stateKey = "CA"; 
     std::vector<std::string> stateResults;
     bptree.SearchByState(stateKey, stateResults);
 
